@@ -52,6 +52,6 @@
   - ```export PATH=$PATH:/usr/local/mysql/bin```
   - ```mysql -uroot -p```でpasswordを入力したらログインできる
 
-### 参考
+### 参照
 - MySQL徹底入門 第4版　MySQL 8.0対応　1-２章
 - [インストール手順参考記事](https://it-jog.com/db/install-mysql-onmac)
