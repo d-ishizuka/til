@@ -18,8 +18,11 @@
   - 文字列、数値、日付、JSON、地理情報
 - 豊富な情報源
   - マニュアルのURL構造
-  - ```https://dev.mysql.com/doc/refman/8.0/en/```
-    - vesion部分を変更したり、enをjaにすることで日本語のリファレンスも確認可能。但し、英語のリファレンスに比べて公開が遅いので、英語での参照が必要な場合もある。
+    - ```https://dev.mysql.com/doc/refman/8.0/en/```
+      - vesion部分を変更したり、enをjaにすることで日本語のリファレンスも確認可能。但し、英語のリファレンスに比べて公開が遅いので、英語での参照が必要な場合もある。
+    - [MySQL Reference Manual](https://dev.mysql.com/doc/)
+    - [www.MySQL.com](https://www.mysql.com/)
+    - [www.Oracle.com](www.Oracle.com)
 
 ## プロダクションレベル
 - 開発途上版(機能変更の可能性あり) : -dmr(Development Milestone Release)
@@ -43,7 +46,12 @@
   - [ダウンロードページ](https://dev.mysql.com/downloads/mysql/)
     - CPUアーキテクチャによってもダウンロードするものが変わる
     - 例えば、M2Macなら(ARM, 64-bit)、Intel製なら(x86, 64-bit)
+- PATHを通す
+  - mysqlのコマンド類は```/usr/local/mysql/bin```ディレクトリに存在
+  - 毎回フルパスで```/usr/local/mysql/bin/mysql```とか入力するのは面倒なので、まずは/usr/local/mysql/binディレクトリにパスを通す。
+  - ```export PATH=$PATH:/usr/local/mysql/bin```
+  - ```mysql -uroot -p```でpasswordを入力したらログインできる
 
 ### 参考
 - MySQL徹底入門 第4版　MySQL 8.0対応　1-２章
-- https://it-jog.com/db/install-mysql-onmac
+- [インストール手順参考記事](https://it-jog.com/db/install-mysql-onmac)
