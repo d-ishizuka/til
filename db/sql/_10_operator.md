@@ -73,5 +73,67 @@ SELECT department, AVG(salary) FROM employees GROUP BY department;
 ```
 
 ```
+# column1でグループ化して集計する
+SELECT column1, SUM(column2), AVG(column2) FROM table_name GROUP BY column1;
 
+# column1とcolumn2でグループ化して集計する
+SELECT column1, column2, SUM(column3), AVG(column3) FROM table_name GROUP BY column1, column2
+
+# WHEREで絞り込んでから、グループ化する
+SELECT column1, MIN(number) FROM table_name WHERE column1 < "xx" GROUP BY column1;
+
+# 集計結果をORDER BYで並び替える
+SELECT column1, COUNT(*) FROM table_name GROUP_BY column1, ORDER BY COUNT(*);
+```
+
+- GROUP BYでCASE文を利用する1
+```
+# GROUP BY内にCASE文を記述する
+SELECT
+CASE
+  WHEN name IN ("香川県", "高知県", "愛媛県", "徳島県") THEN "四国"
+　ELSE "その他"
+END AS "district",
+count(*)
+GROUP BY
+CASE
+  WHEN name IN ("香川県", "高知県", "愛媛県", "徳島県") THEN "四国"
+　ELSE "その他"
+END;
+```
+
+- GROUP BYでCASE文を利用する2
+```
+select
+case
+    when birth_place="日本" THEN "日本人"
+    else "その他"
+  END AS "国籍",
+count(*)
+from
+users
+group BY
+  case
+    when birth_place="日本" THEN "日本人"
+    else "その他"
+  END;
+```
+
+## 集計結果の絞り込み(Having)
+- グループ化して集計した結果に対して、絞り込みをする場合に用いるSQL
+  - WHERE : GROUP BYをする前に絞り込む
+  - HAVING : GROUP BYをした後に絞り込む 
+```
+HAVINGの書き方
+# SUM(salary)が10000よりも大きい場合
+SELECT department, SUM(salary), AVG(salary) FROM table_name GROUP BY department HAVING SUM(salary) > 10000;
+
+# WHEREで絞り込んでから、グループ化して、HAVINGで絞り込む
+SELECT column1, MIN(number) FROM table_name WHERE column1 < "xx" GROUP BY column1 HAVING MIN(number) < 10000
+
+# 集計結果をORDER BYで並び替える
+SELECT column1, COUNT(*) FROM table_name GROUP_BY column1 HAVING COUNT(*) < 100 ORDER BY COUNT(*);
+
+# GROUP BYがなくてもHAVINGを使えるケース
+select "重複なし" from students having count(id) = count(distinct id); # whereではない
 ```
