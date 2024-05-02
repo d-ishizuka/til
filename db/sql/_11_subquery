@@ -1,0 +1,125 @@
+## テーブルに別名をつける
+- これまでSQLでカラムに別名をつけて表示してきた。同じようにテーブルにも別名をつけることができる。
+
+```
+# カラムに別名をつける
+SELECT column_name AS alias_name
+FROM table_name;
+```
+```
+# テーブルに別名をつける
+SELECT
+  st.id,
+  st.name
+FROM
+  students AS st;
+```
+
+## 副問い合わせ
+- SELECT文をFROMの中やWHEREの中などに記述して、SELECTの結果を別の処理に用いるSQL文
+- メインのSELECT文以外のSELECT文をサブクエリ(副問い合わせ)と言う。要するに、SELECT文の中にSELECT文を書くことを副問い合わせと言う
+- メインのSELECT文をメインクエり(主問い合わせ)と言う
+
+```
+# 副問い合わせ1（INで使う）
+SELECT 
+ lastName, firstName
+FROM employees
+WHERE
+  office_code IN (
+    SELECT office_code FROM offices WHERE country = 'USA'
+  );
+```
+
+```
+# 副問い合わせ2(INで複数のカラムを使う)
+SELECT
+  lastName, firstName
+FROM
+  employees
+WHERE
+  (office_code, office_name) IN (
+    SELECT office_code, office_name FROM offices WHERE country = 'USA'
+  );
+
+# usersカラムに含まれる人のみ、studentsテーブルから取り出す(first_nameとlast_nameが両方一致する)
+select first_name, last_name from students 
+where (first_name, last_name) in (select first_name, last_name from users);
+```
+
+```
+# 副問い合わせ3(集計関数と使う)
+SELECT
+  customerNumber,
+  checkNumber,
+  amount
+FROM
+  payments
+WHERE
+  amount = (SELECT MAX(amount) FROM payments); # amountが最大のものだけ取り出す
+
+# 最年長の人の情報
+select * from employees where age = (select max(age) from employees);
+
+# 年齢を平均と比較する
+select * from employees where age > (select ave(age) from employees);
+```
+
+```
+# 副問い合わせ4(FROMの取得先に用いる) ← テーブルを作っているのと同じ
+SELECT
+  MAX(lineitems.items),
+  MIN(lineitems.items),
+  FLOOR(AVG(lineitems.itmes))
+FROM
+  (
+    SELECT
+      order_number, COUNT(order_number) AS items
+    FROM
+      order_details
+    GROUP BY order_number
+  ) AS lineitems; # サブクエリをテーブルとして使うには、必ずAlias名をつける必要がある
+
+
+-- 年代の集計
+SELECT
+  MAX(age_count), MIN(age_count)
+FROM
+(
+  SELECT FLOOR(age/10)*10, COUNT(*) AS age_count FROM employees
+  GROUP BY FLOOR(age/10) # この書き方をすると、年齢を10で割った結果に応じてグループ化。つまり年代ごとにグループ化する。
+) AS age_summary;
+```
+
+```
+# 副問い合わせ5(SELECTの行の1つに用いる)
+SELECT
+  p1.site_name,
+  (
+    SELECT
+      MAX(file_size)
+    FROM
+      pages2 AS p2
+    WHERE
+      p2.site_id = p1.site_id
+  ) AS max_file_size
+FROM
+  page1 AS p1;
+
+# 補足：以下の"AS order_max"は、"SELECT MAX(order_date) FROM orders"のエイリアスではなく、"orders"テーブルのエイリアス。なので、その後ろのWHEREでordersテーブルのカラム名であるorder_max.customer_idが使える！！
+# csも直前のcustomersテーブルのエイリアス
+SELECT
+  cs.first_name,
+  cs.last_name,
+  (
+	  SELECT MAX(order_date) FROM orders AS order_max WHERE cs.id = order_max.customer_id
+  ) AS "最近の注文日",
+  (
+	  SELECT min(order_date) FROM orders AS order_min WHERE cs.id = order_min.customer_id
+  ) AS "古い注文日",
+  (
+	  SELECT SUM(order_amount * order_price) FROM orders AS tmp_order WHERE cs.id = tmp_order.customer_id
+  )
+FROM customers AS cs
+WHERE cs.id < 10;
+```
