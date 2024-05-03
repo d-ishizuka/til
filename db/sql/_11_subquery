@@ -123,3 +123,51 @@ SELECT
 FROM customers AS cs
 WHERE cs.id < 10;
 ```
+
+```
+# 副問い合わせ(CASEとともに使う)
+SELECT
+  employee_id,
+  last_name,
+  (
+    CASE
+      WHEN department_id = (
+        SELECT
+          department_id
+        FROM
+          departments
+        WHERE
+          location_id = 2500
+      ) THEN 'Canada'
+      ELSE 'USA'
+    END
+  ) AS location
+FROM
+  employees;
+```
+
+## INSERT INTO SELECT / CREATE TABLE SELECT
+### INSERT INTO SELECT
+- SELECT処理の実行結果をテーブルに挿入する
+```
+INSERT INTO table_name(column_list)
+SELECT
+  select_list
+FROM
+  another_table
+WHERE
+  condition;
+```
+
+### CREATE TABLE SELECT
+- 別のテーブルを作成して、SELECT処理の実行結果を挿入する
+- keyだったり、テーブルのメタ情報は入らず、ただデータだけがコピーされる
+```
+CREATE TABLE table_name (AS)
+SELECT
+  select_list
+FROM
+  another_table
+WHERE
+  condition;
+```
