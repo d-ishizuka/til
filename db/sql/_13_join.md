@@ -182,7 +182,106 @@ ON
 ```
 
 ## 自己結合(SELF JOIN)
+- 同一のテーブルを結合する結合方法
+- 同一のテーブルなので必ず名前をつけるようにする
+```
+SELECT
+  CONCAT(emp1.last_name, emp1.first_name) AS "部下の名前",
+  COALESCE(CONCAT(emp2.last_name, emp2.first_name), "該当なし") AS "上司の名前"
+FROM
+  employees AS emp1
+LEFT JOIN
+  employees AS emp2
+ON
+  emp1.manager_id = emp2.id;
+```
 
+## 交差結合(CROSS JOIN)
+- 2つのテーブルのデータの全ての組み合わせを取得するSQL
+ Colorsテーブル
+ |COLOR|
+ |-|
+ |Blue|
+ |Green|
+
+ Sizesテーブル
+ |SIZE|
+ |-|
+ |Small|
+ |Medium|
+ |Large|
+
+ 交差結合後
+ |COLOR|SIZE|
+ |-|-|
+ |Blue|Small|
+ |Blue|Medium|
+ |Blue|Large|
+ |Green|Small|
+ |Green|Medium|
+ |Green|Large|
+
+
+```
+# 書き方1
+SELECT (カラム) FROM テーブル1 AS 別名1
+CROSS JOIN テーブル2 AS 別名2
+(ON 結合条件)
+
+# 書き方2(古い結合の書き方)
+select * from employees AS emp1, employees AS emp2;
+```
+```
+SELECT
+  *,
+  CASE
+    WHEN cs.age > summary_customers.avg_age THEN "○"
+    ELSE "×"
+  END AS "平均年齢よりも年齢が高いか"
+FROM customers AS cs
+CROSS JOIN(
+  SELECT AVG(age) AS avg_age FROM customers
+) AS summary_customers;
+```
+
+## WITH
+- WITHの後に記述したSQLの実行結果を、一時的なテーブルに格納する。**可読性の高い構文**
+- 計算量を下げるには、まず絞り込み(where)に関する一時的なテーブルを作ってからJOINやGROUP BYするテーブルを作るのがいい
+  - SQLのオプティマイザーがいい感じにやってくれることもある
+```
+WITH 中間テーブル名1 AS (
+  SELECT xx
+), 中間テーブル名2 AS (
+  SELECT 〇〇
+)
+SELECT *
+FROM テーブル
+INNER JOIN 中間テーブル1 ON テーブル.id = 中間テーブル1.id
+INNER JOIN 中間テーブル2 ON 中間テーブル1.id = 中間テーブル2.id;
+```
+
+```
+# WITHを使った場合との比較
+
+# WITHを使わない場合
+SELECT
+  *
+FROM
+  employees AS e
+INNER JOIN
+  departments AS d
+ON
+  e.department_id = d.id
+WHERE
+  d.name = "営業部";
+
+# WITHを使う場合
+WITH tmp_departments AS(
+  SELECT * FROM departments WHERE name = "営業部"
+)
+SELECT * FROM employees AS e INNER JOIN tmp_departments
+ON e.department_id = tmp_departments.id;
+```
 
 ## 参考
 - [INNER JOINとOUTER JOIN(LEFT JOIN, RIGHT JOIN)の違いについて](https://qiita.com/ysda/items/0d473e644409e45965d7)
