@@ -108,3 +108,165 @@ SELECT
 FROM
   daily_summary;
 ```
+
+## ウィンドウ関数一覧
+- ROW_NUMBER...パーティション内での行番号(重複はカウントアップする)
+- RANK...パーティション内で重複する値は同じ値にして、重複分だけカウントアップしてランキング表示する
+- DENSE_RANK...パーティション内で重複する値は同じ値にして、1だけカウントアップしてランキング表示する
+
+|PRICE|ROW_NUMBER|RANK|DENSE_RANK|
+|-|-|-|-|
+|7|1|1|1|
+|7|2|1|1|
+|8.5|3|3|2|
+|8.5|4|3|2|
+|9|5|5|3|
+|10|6|6|4|
+
+- PERCENT_RANK...ORDER_BYと使う。現在の行のランクが全体の何%に当たるか(RANK-1)/(全行数-1)
+- CUME_DIST...ORDER BYと使う。現在の行の値以下の行の数が、全体の何%に当たるか
+
+|price|PERCENT_RANK OVER(ORDER BY price)|CUME_DIST OVER(ORDER BY price)|
+|-|-|-|
+|100|0|0.2|
+|150|0.25|0.4|
+|200|0.5|0.8|
+|200|0.5|0.8|
+|300|1|1|
+
+```
+SELECT
+age,
+RANK() OVER(ORDER BY age) AS row_rank,  -- RANK
+COUNT(*) OVER() AS cnt, -- 行数
+PERCENT_RANK() OVER(ORDER BY age) AS p_age, -- (RANK - 1)/(行数 - 1)
+CUME_DIST() OVER(ORDER BY age) AS c_age -- 現在の行より小さい行の割合
+FROM employees;
+```
+
+- LAG(expr, offset, default) ... **現在の行の、前の行の値を取得する**。expr(取り出す対象の行・式)、offset(何行前の値を取り出すか)、defalut(値を取り出せなかった場合の値)
+- LEAD(expr, offset, default) ... **現在の行の、後の行の値を取得する**。expr(取り出す対象の行・式)、offset(何行後の値を取り出すか)、default(値を取り出せなかった場合の値)
+
+```
+元のテーブル
+```
+|number|sale|
+|-|-|
+|1|500|
+|2|300|
+|3|400|
+|4|100|
+|5|500|
+
+```
+LAG(sale) OVER(ORDER BY number)
+```
+
+|実行結果|
+|-|
+|NULL|
+|500|
+|300|
+|400|
+|100|
+
+```
+LAG(sale, 2, 0) OVER(ORDER BY number)
+```
+
+|実行結果|
+|-|
+|0|
+|0|
+|500|
+|300|
+|400|
+
+``` 
+LEAD(sale) OVER(ORDER BY number)
+```
+
+|実行結果|
+|-|
+|300|
+|400|
+|100|
+|500|
+|NULL|
+
+```
+LEAD(sale, 2, 0) OVER(ORDER BY number)
+```
+
+|実行結果|
+|-|
+|400|
+|100|
+|500|
+|0|
+|0|
+
+- FIRST_VALUE...並び替えられたパーティション内の対象フレームの、一番最初の行の値を取り出す
+- LAST_VALUE...並び替えられたパーティション内の対象フレームの、一番最後の行の値を取り出す
+
+```
+元のテーブル
+```
+|名前|部署|年齢|
+|-|-|-|
+|Taro|営業|24|
+|Jiro|営業|23|
+|Saburo|経理|25|
+|Yoshio|経理|23|
+|Takashi|総務|26|
+|Mikio|総務|28|
+
+```
+FIRST_VALUE(名前) OVER(PARTITION BY 部署 ORDER BY 年齢)
+```
+|実行結果|
+|Jiro|
+|Jiro|
+|Yoshio|
+|Yoshio|
+|Takashi|
+|Takashi|
+
+- NTILE(n)...対象の分布が、最初から数えて何番目にあたるのかを表示する。nで分布を幾つの数に分けるのかを設定する。
+```
+元のテーブル
+```
+|ID|VALUE|
+|-|-|
+|1|A|
+|2|B|
+|3|C|
+|4|D|
+|5|E|
+|6|F|
+|7|G|
+```
+NTILE(4) OVER(ORDER BY value)
+```
+```
+|ID|VALUE|NTILE|
+|-|-|-|
+|1|A|1|
+|2|B|1|
+|3|C|2|
+|4|D|2|
+|5|E|3|
+|6|F|3|
+|7|G|4|
+```
+
+```
+SELECT
+  age,
+  LAG(age) OVER(ORDER BY age), -- 直前
+  LAG(age, 3, 0) OVER(ORDER BY age), -- 3つ前、ない場合は0
+  LEAD(age) OVER(ORDER BY age), -- 直後
+  LEAD(age, 2, 0) OVER(ORDER BY age) -- 2つ後、ない場合は0
+FROM
+  customers;
+```
