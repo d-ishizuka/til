@@ -171,7 +171,35 @@ ON
 8. employeesテーブルから、salariesテーブルと紐づけのできないレコードを取り出してください。
 EXISTSとINとLEFT JOIN、それぞれの方法で記載してください
 ```
+```
+# NOT EXISTS
+SELECT
+  *
+FROM
+  employees AS em
+WHERE
+  NOT EXISTS (SELECT DISTINCT employee_id FROM WHERE sa.employee_id = em.id);
 
+# NOT IN
+SELECT
+  *
+FROM
+  employees AS em
+WHERE
+  em.id NOT IN (SELECT DISTINCT employee_id FROM salaries);
+
+# LEFT JOIN
+SELECT
+  *
+FROM
+  employees AS em
+LEFT JOIN
+  salaries AS sa
+ON
+  em.id = sa.employee_id
+WHERE
+  sa.id IS NULL;
+```
 
 ```
 9. employeesテーブルとcustomersテーブルのage同士を比較します
@@ -180,12 +208,55 @@ employeesテーブルのageが、最小age未満のものは最小未満、最�
 平均age以上で最大age未満のものは最大未満、それ以外はその他と表示します
 WITH句を用いて記述します
 ```
-
-
+```
+WITH tmp AS(
+   SELECT
+     MIN(age) AS min_age,
+     AVG(age) AS avg_age,
+     MAX(age) AS max_age
+   FROM
+     customers
+)
+SELECT
+  emp.id,
+  emp.age,
+  (SELECT min_age FROM tmp) AS 最小年齢,
+  (SELECT avg_age FROM tmp) AS 平均年齢,
+  (SELECT max_age FROM tmp) AS 最大年齢,
+  CASE
+    WHEN emp.age < (SELECT min_age FROM tmp) THEN '最小未満'
+    WHEN emp.age < (SELECT avg_age FROM tmp) THEN '平均未満'
+    WHEN emp.age < (SELECT max_age FROM tmp)
+ THEN '最大未満'
+    ELSE 'その他'
+  END
+FROM employees AS emp;
+```
 
 ```
 10. customersテーブルからageが50よりも大きいレコードを取り出して、ordersテーブルと連結します。
 customersテーブルのidに対して、ordersテーブルのorder_amount*order_priceのorder_date毎の合計値。
 合計値の7日間平均値、合計値の15日平均値、合計値の30日平均値を計算します。
 7日間平均、15日平均値、30日平均値が計算できない区間(対象よりも前の日付のデータが十分にない区間)は、空白を表示してください。
+```
+```
+SELECT
+  od.order_date AS 注文日,
+  SUM(od.order_amount * od.order_price) AS payment,
+  AVG(SUM(od.order_amount * od.order_price)) OVER(ORDER BY od.order_date ROWS BETWEEN 6  PRECEDING AND CURRENT ROW) AS avg_7,
+  AVG(SUM(od.order_amount * od.order_price)) OVER(ORDER BY od.order_date ROWS BETWEEN 14  PRECEDING AND CURRENT ROW) AS avg_15,
+  AVG(SUM(od.order_amount * od.order_price)) OVER(ORDER BY od.order_date ROWS BETWEEN 29  PRECEDING AND CURRENT ROW) AS avg_30
+FROM(
+  SELECT
+    *
+  FROM
+    customers AS cs
+  WHERE
+    age > 50
+  ) AS tmp_cs
+INNER JOIN
+  orders AS od
+ON
+  od.customer_id = tmp_cs.id
+GROUP BY od.order_date;
 ```
