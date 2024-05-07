@@ -60,6 +60,30 @@ INNER JOIN
 ON
   st.id = en.student_id
 ;
+
+SELECT
+  CASE
+    WHEN cl.id < 5 THEN "クラス1"
+    ELSE "クラス2"
+  END AS クラス,
+  count(st.id)
+END
+FROM
+  classes AS cl
+INNER JOIN
+  enrollments AS en
+ON
+  cl.id = en.class_id
+INNER JOIN
+  students AS st
+ON
+  st.id = en.student_id
+GROUP BY
+CASE
+  WHEN cl.id < 5 THEN "クラス1"
+  ELSE "クラス2"
+END
+;
 ```
 
 ```
@@ -78,6 +102,24 @@ ON
   em.id = sa.employee_id
 WHERE
   em.age < 40 and payment > 7000000
+;
+
+# id毎に出す場合
+SELECT
+  SUM(sa.payment) AS 月収の合計値,
+  AVG(sa.payment) AS 月収の平均値
+FROM
+  employees AS em
+INNER JOIN
+  salaries AS sa
+ON
+  em.id = sa.employee_id
+WHERE
+  em.age < 40
+GROUP BY
+  em.id
+HAVING
+  sa.payment > 7000000
 ;
 ```
 
