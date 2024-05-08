@@ -273,6 +273,8 @@ SELECT
     ELSE 'その他'
   END
 FROM employees AS emp;
+
+→ CROSS JOINでtmpとempをJOINすればサブクエリにしなくても書ける
 ```
 
 ```
