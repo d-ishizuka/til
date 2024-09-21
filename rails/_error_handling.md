@@ -85,3 +85,5 @@ end
 
 ## 参照
 - パーフェクトRuby on Rails [増補改訂版]8-3 落穂ひろい
+- [Railsアプリの例外ハンドリングとエラーページの表示についてまとめてみた](https://qiita.com/upinetree/items/273ae574f1c021d24c37)
+- [Rails の exceptions_app によるエラーページの表示をテストする](https://qiita.com/upinetree/items/5410f130c91909db347c)
